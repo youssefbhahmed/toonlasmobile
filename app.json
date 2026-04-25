@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "toon",
+    "slug": "toonlas-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "toonlas",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F47B20"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.toonlas.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F47B20"
+      },
+      "package": "com.toonlas.mobile",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "backgroundColor": "#F47B20",
+          "imageWidth": 200
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "supabaseUrl": "https://ymsvoohfxfyenktvhctp.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inltc3Zvb2hmeGZ5ZW5rdHZoY3RwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MTI5NTcsImV4cCI6MjA5MjI4ODk1N30.IBK71I97vHXxgda6BSd4fxmKAIChOvdhBMUguMVsevE",
+      "webUrl": "https://toonlas.shop",
+      "router": {},
+      "eas": {
+        "projectId": "a2dad2fd-d5d6-4774-8816-081381f64f3e"
+      }
+    },
+    "owner": "youssefbha"
+  }
+}
