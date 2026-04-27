@@ -7,6 +7,7 @@ import {
   Alert,
   Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -34,6 +35,7 @@ interface Product {
 export default function ProductScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
@@ -210,8 +212,11 @@ export default function ProductScreen() {
         </View>
       </ScrollView>
 
-      {/* Sticky action bar */}
-      <View className="border-t border-gray-200 bg-white p-3">
+      {/* Sticky action bar — respects bottom safe area */}
+      <View
+        className="border-t border-gray-200 bg-white p-3"
+        style={{ paddingBottom: 12 + insets.bottom }}
+      >
         <View className="flex-row items-center gap-3">
           <View className="flex-row items-center overflow-hidden rounded-lg border border-gray-300">
             <Pressable

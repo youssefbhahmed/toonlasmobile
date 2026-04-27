@@ -7,11 +7,12 @@ import {
   Modal,
   Linking,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Dimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   X,
   Home,
@@ -21,10 +22,11 @@ import {
   MapPin,
   User,
   LogOut,
-  LogIn,
   LayoutDashboard,
   Info,
   ChevronRight,
+  HelpCircle,
+  Phone,
 } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import { useUI } from '../lib/ui';
@@ -45,8 +47,9 @@ export function AppDrawer() {
   const { drawerOpen, closeDrawer } = useUI();
   const { user, profile, signOut } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { width } = Dimensions.get('window');
-  const drawerWidth = Math.min(320, width * 0.82);
+  const drawerWidth = Math.min(330, width * 0.85);
   const translateX = useRef(new Animated.Value(-drawerWidth)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
 
@@ -67,12 +70,12 @@ export function AppDrawer() {
     Animated.parallel([
       Animated.timing(translateX, {
         toValue: drawerOpen ? 0 : -drawerWidth,
-        duration: 220,
+        duration: 240,
         useNativeDriver: true,
       }),
       Animated.timing(overlayOpacity, {
         toValue: drawerOpen ? 1 : 0,
-        duration: 220,
+        duration: 240,
         useNativeDriver: true,
       }),
     ]).start();
@@ -80,7 +83,7 @@ export function AppDrawer() {
 
   function navigate(path: string) {
     closeDrawer();
-    setTimeout(() => router.push(path as any), 150);
+    setTimeout(() => router.push(path as any), 180);
   }
 
   function openAdminWeb() {
@@ -92,20 +95,33 @@ export function AppDrawer() {
     });
   }
 
+  // Initials for avatar
+  const initials = profile?.full_name
+    ? profile.full_name
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((s) => s[0])
+        .join('')
+        .toUpperCase()
+    : user?.email?.[0]?.toUpperCase() ?? '?';
+
   return (
-    <Modal visible={drawerOpen} transparent animationType="none" onRequestClose={closeDrawer}>
+    <Modal visible={drawerOpen} transparent animationType="none" onRequestClose={closeDrawer} statusBarTranslucent>
       <View style={{ flex: 1 }}>
+        {/* Backdrop */}
         <Animated.View
           style={{
             position: 'absolute',
             inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
+            backgroundColor: 'rgba(15, 23, 42, 0.55)',
             opacity: overlayOpacity,
           }}
         >
           <Pressable style={{ flex: 1 }} onPress={closeDrawer} />
         </Animated.View>
 
+        {/* Drawer panel */}
         <Animated.View
           style={{
             position: 'absolute',
@@ -116,89 +132,131 @@ export function AppDrawer() {
             backgroundColor: '#FFFFFF',
             transform: [{ translateX }],
             shadowColor: '#000',
-            shadowOpacity: 0.3,
-            shadowRadius: 10,
-            elevation: 12,
+            shadowOpacity: 0.25,
+            shadowRadius: 16,
+            shadowOffset: { width: 4, height: 0 },
+            elevation: 16,
           }}
         >
-          {/* Header */}
+          {/* HEADER — gradient orange */}
           <View
             style={{
               backgroundColor: '#F47B20',
-              paddingTop: 48,
-              paddingBottom: 20,
+              paddingTop: insets.top + 14,
+              paddingBottom: 22,
               paddingHorizontal: 20,
+              borderBottomWidth: 0,
             }}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            {/* Top row: logo + close */}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: user ? 18 : 14,
+              }}
+            >
               <Logo size="md" color="light" />
               <Pressable
                 onPress={closeDrawer}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  backgroundColor: 'rgba(255,255,255,0.2)',
+                hitSlop={10}
+                style={({ pressed }) => ({
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: pressed ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.18)',
                   alignItems: 'center',
                   justifyContent: 'center',
-                }}
+                })}
               >
-                <X size={18} color="#FFFFFF" />
+                <X size={18} color="#FFFFFF" strokeWidth={2.5} />
               </Pressable>
             </View>
 
             {user ? (
-              <View style={{ marginTop: 16 }}>
-                <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 16 }}>
-                  {profile?.full_name ?? 'Utilisateur'}
-                </Text>
-                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 2 }}>
-                  {user.email}
-                </Text>
-                {profile?.role === 'admin' && (
-                  <View
-                    style={{
-                      marginTop: 8,
-                      alignSelf: 'flex-start',
-                      backgroundColor: 'rgba(255,255,255,0.25)',
-                      paddingHorizontal: 10,
-                      paddingVertical: 3,
-                      borderRadius: 999,
-                    }}
-                  >
-                    <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '700' }}>
-                      ADMIN
-                    </Text>
-                  </View>
-                )}
-              </View>
-            ) : (
-              <View style={{ marginTop: 16, flexDirection: 'row', gap: 8 }}>
-                <Pressable
-                  onPress={() => navigate('/(auth)/login')}
+              /* Profile pill */
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                  backgroundColor: 'rgba(255,255,255,0.16)',
+                  borderRadius: 14,
+                  padding: 12,
+                }}
+              >
+                <View
                   style={{
-                    flex: 1,
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
                     backgroundColor: '#FFFFFF',
-                    paddingVertical: 8,
-                    borderRadius: 999,
                     alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
-                  <Text style={{ color: '#F47B20', fontWeight: '700', fontSize: 13 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '900', color: '#F47B20' }}>
+                    {initials}
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 15 }} numberOfLines={1}>
+                      {profile?.full_name ?? 'Utilisateur'}
+                    </Text>
+                    {profile?.role === 'admin' && (
+                      <View
+                        style={{
+                          backgroundColor: '#1E3A5F',
+                          paddingHorizontal: 6,
+                          paddingVertical: 1,
+                          borderRadius: 4,
+                        }}
+                      >
+                        <Text style={{ color: '#FFFFFF', fontSize: 9, fontWeight: '800', letterSpacing: 0.5 }}>
+                          ADMIN
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text
+                    style={{ color: 'rgba(255,255,255,0.85)', fontSize: 11, marginTop: 2 }}
+                    numberOfLines={1}
+                  >
+                    {user.email}
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Pressable
+                  onPress={() => navigate('/(auth)/login')}
+                  style={({ pressed }) => ({
+                    flex: 1,
+                    backgroundColor: '#FFFFFF',
+                    paddingVertical: 11,
+                    borderRadius: 10,
+                    alignItems: 'center',
+                    opacity: pressed ? 0.85 : 1,
+                  })}
+                >
+                  <Text style={{ color: '#F47B20', fontWeight: '800', fontSize: 13 }}>
                     Connexion
                   </Text>
                 </Pressable>
                 <Pressable
                   onPress={() => navigate('/(auth)/register')}
-                  style={{
+                  style={({ pressed }) => ({
                     flex: 1,
                     backgroundColor: '#1E3A5F',
-                    paddingVertical: 8,
-                    borderRadius: 999,
+                    paddingVertical: 11,
+                    borderRadius: 10,
                     alignItems: 'center',
-                  }}
+                    opacity: pressed ? 0.85 : 1,
+                  })}
                 >
-                  <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13 }}>
                     Inscription
                   </Text>
                 </Pressable>
@@ -206,88 +264,97 @@ export function AppDrawer() {
             )}
           </View>
 
-          <ScrollView>
-            {/* Admin shortcut (if admin) */}
+          {/* SCROLL CONTENT — respects bottom safe area */}
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Admin shortcut */}
             {profile?.role === 'admin' && (
-              <View>
-                <Pressable
-                  onPress={openAdminWeb}
+              <Pressable
+                onPress={openAdminWeb}
+                style={({ pressed }) => ({
+                  marginHorizontal: 12,
+                  marginTop: 12,
+                  marginBottom: 4,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                  paddingHorizontal: 14,
+                  paddingVertical: 12,
+                  backgroundColor: pressed ? '#FCE7D0' : '#FEF5ED',
+                  borderRadius: 12,
+                  borderLeftWidth: 3,
+                  borderLeftColor: '#F47B20',
+                })}
+              >
+                <View
                   style={{
-                    flexDirection: 'row',
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    backgroundColor: '#F47B20',
                     alignItems: 'center',
-                    gap: 12,
-                    paddingHorizontal: 20,
-                    paddingVertical: 16,
-                    backgroundColor: '#FEF5ED',
-                    borderBottomWidth: 1,
-                    borderBottomColor: '#FCE7D0',
+                    justifyContent: 'center',
                   }}
                 >
-                  <LayoutDashboard size={20} color="#F47B20" />
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 15, fontWeight: '700', color: '#F47B20' }}>
-                      Tableau de bord admin
-                    </Text>
-                    <Text style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>
-                      Ouvre le dashboard dans le navigateur
-                    </Text>
-                  </View>
-                  <ChevronRight size={18} color="#F47B20" />
-                </Pressable>
-              </View>
+                  <LayoutDashboard size={18} color="#FFFFFF" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '800', color: '#1E3A5F' }}>
+                    Tableau de bord admin
+                  </Text>
+                  <Text style={{ fontSize: 11, color: '#6A7189', marginTop: 1 }}>
+                    Ouvre le dashboard web
+                  </Text>
+                </View>
+                <ChevronRight size={16} color="#F47B20" />
+              </Pressable>
             )}
 
-            {/* Account shortcuts */}
+            {/* MON COMPTE */}
             {user && (
-              <View style={{ paddingTop: 8 }}>
+              <>
+                <SectionLabel label="Mon compte" />
                 <DrawerItem
-                  icon={<User size={20} color="#374151" />}
+                  icon={<User size={18} color="#1E3A5F" />}
                   label="Mon profil"
                   onPress={() => navigate('/profile')}
                 />
                 <DrawerItem
-                  icon={<ShoppingBag size={20} color="#374151" />}
+                  icon={<ShoppingBag size={18} color="#1E3A5F" />}
                   label="Mes commandes"
                   onPress={() => navigate('/orders')}
                 />
                 <DrawerItem
-                  icon={<MapPin size={20} color="#374151" />}
+                  icon={<MapPin size={18} color="#1E3A5F" />}
                   label="Mes adresses"
                   onPress={() => navigate('/addresses')}
                 />
                 <DrawerItem
-                  icon={<Heart size={20} color="#374151" />}
+                  icon={<Heart size={18} color="#1E3A5F" />}
                   label="Mes favoris"
                   onPress={() => navigate('/wishlist')}
                 />
-                <Separator />
-              </View>
+              </>
             )}
 
-            {/* Categories */}
-            <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6 }}>
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: '700',
-                  color: '#9CA3AF',
-                  letterSpacing: 1,
-                  textTransform: 'uppercase',
-                }}
-              >
-                Catégories
-              </Text>
-            </View>
+            {/* NAVIGATION */}
+            <SectionLabel label="Navigation" />
             <DrawerItem
-              icon={<Home size={20} color="#374151" />}
+              icon={<Home size={18} color="#1E3A5F" />}
               label="Accueil"
               onPress={() => navigate('/(tabs)')}
             />
             <DrawerItem
-              icon={<Package size={20} color="#374151" />}
+              icon={<Package size={18} color="#1E3A5F" />}
               label="Tous les produits"
               onPress={() => navigate('/(tabs)/search')}
             />
+
+            {/* CATÉGORIES */}
+            <SectionLabel label="Catégories" />
             {categories.map((c) => (
               <DrawerItem
                 key={c.id}
@@ -297,23 +364,26 @@ export function AppDrawer() {
               />
             ))}
 
-            {/* Static links */}
-            <Separator />
-            <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6 }}>
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: '700',
-                  color: '#9CA3AF',
-                  letterSpacing: 1,
-                  textTransform: 'uppercase',
-                }}
-              >
-                Aide
-              </Text>
-            </View>
+            {/* AIDE */}
+            <SectionLabel label="Aide & infos" />
             <DrawerItem
-              icon={<Info size={20} color="#374151" />}
+              icon={<HelpCircle size={18} color="#1E3A5F" />}
+              label="Centre d'aide"
+              onPress={() => {
+                closeDrawer();
+                Linking.openURL(`${extra.webUrl ?? 'https://toonlas.shop'}/help`);
+              }}
+            />
+            <DrawerItem
+              icon={<Phone size={18} color="#1E3A5F" />}
+              label="Nous contacter"
+              onPress={() => {
+                closeDrawer();
+                Linking.openURL('mailto:hello@toonlas.shop');
+              }}
+            />
+            <DrawerItem
+              icon={<Info size={18} color="#1E3A5F" />}
               label="À propos"
               onPress={() => {
                 closeDrawer();
@@ -321,10 +391,10 @@ export function AppDrawer() {
               }}
             />
 
-            {/* Sign out */}
+            {/* DÉCONNEXION */}
             {user && (
               <>
-                <Separator />
+                <View style={{ height: 12 }} />
                 <Pressable
                   onPress={() => {
                     Alert.alert('Déconnexion', 'Voulez-vous vous déconnecter ?', [
@@ -339,27 +409,55 @@ export function AppDrawer() {
                       },
                     ]);
                   }}
-                  style={{
+                  style={({ pressed }) => ({
+                    marginHorizontal: 16,
+                    marginTop: 4,
                     flexDirection: 'row',
                     alignItems: 'center',
-                    gap: 12,
-                    paddingHorizontal: 20,
-                    paddingVertical: 14,
-                  }}
+                    justifyContent: 'center',
+                    gap: 8,
+                    paddingVertical: 12,
+                    backgroundColor: pressed ? '#FEE2E2' : '#FEF2F2',
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    borderColor: '#FECACA',
+                  })}
                 >
-                  <LogOut size={20} color="#DC2626" />
-                  <Text style={{ fontSize: 15, color: '#DC2626', fontWeight: '600' }}>
-                    Déconnexion
+                  <LogOut size={16} color="#DC2626" />
+                  <Text style={{ fontSize: 14, color: '#DC2626', fontWeight: '700' }}>
+                    Se déconnecter
                   </Text>
                 </Pressable>
               </>
             )}
 
             <View style={{ height: 24 }} />
+
+            {/* Version footer */}
+            <View style={{ paddingHorizontal: 20, alignItems: 'center' }}>
+              <Text style={{ fontSize: 10, color: '#9AA0B5' }}>toon. — v1.0.0</Text>
+            </View>
           </ScrollView>
         </Animated.View>
       </View>
     </Modal>
+  );
+}
+
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <View style={{ paddingHorizontal: 22, paddingTop: 18, paddingBottom: 6 }}>
+      <Text
+        style={{
+          fontSize: 10,
+          fontWeight: '800',
+          color: '#9AA0B5',
+          letterSpacing: 1.4,
+        }}
+      >
+        {label.toUpperCase()}
+      </Text>
+    </View>
   );
 }
 
@@ -381,32 +479,43 @@ function DrawerItem({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        backgroundColor: pressed ? '#F9FAFB' : 'transparent',
+        paddingHorizontal: 22,
+        paddingVertical: 11,
+        backgroundColor: pressed ? '#F5F6F9' : 'transparent',
       })}
     >
       {thumbnail ? (
         <View
           style={{
-            width: 28,
-            height: 28,
-            borderRadius: 14,
+            width: 32,
+            height: 32,
+            borderRadius: 8,
             overflow: 'hidden',
-            backgroundColor: '#F3F4F6',
+            backgroundColor: '#F5F6F9',
+            borderWidth: 1,
+            borderColor: '#E8EAF0',
           }}
         >
           <Image source={{ uri: thumbnail }} contentFit="cover" style={{ flex: 1 }} />
         </View>
       ) : (
-        <View style={{ width: 28, alignItems: 'center' }}>{icon}</View>
+        <View
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            backgroundColor: '#F5F6F9',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {icon}
+        </View>
       )}
-      <Text style={{ flex: 1, fontSize: 14, color: '#111827' }}>{label}</Text>
-      <ChevronRight size={16} color="#9CA3AF" />
+      <Text style={{ flex: 1, fontSize: 14, color: '#1E3A5F', fontWeight: '500' }}>
+        {label}
+      </Text>
+      <ChevronRight size={14} color="#9AA0B5" />
     </Pressable>
   );
-}
-
-function Separator() {
-  return <View style={{ height: 1, backgroundColor: '#F3F4F6', marginVertical: 4 }} />;
 }

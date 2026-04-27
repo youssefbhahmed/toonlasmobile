@@ -1,7 +1,8 @@
 import { Tabs } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { Home, Search, ShoppingCart, User, Menu } from 'lucide-react-native';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCart } from '../../lib/cart';
 import { useUI } from '../../lib/ui';
 import { Logo } from '../../components/Logo';
@@ -11,18 +12,18 @@ function HeaderLeft() {
   return (
     <Pressable
       onPress={openDrawer}
-      hitSlop={10}
+      hitSlop={12}
       style={({ pressed }) => ({
         width: 40,
         height: 40,
-        marginLeft: 6,
+        marginLeft: 8,
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 20,
-        backgroundColor: pressed ? 'rgba(255,255,255,0.2)' : 'transparent',
+        backgroundColor: pressed ? 'rgba(255,255,255,0.22)' : 'transparent',
       })}
     >
-      <Menu color="#FFFFFF" size={24} />
+      <Menu color="#FFFFFF" size={24} strokeWidth={2.5} />
     </Pressable>
   );
 }
@@ -32,18 +33,18 @@ function HeaderRight() {
   return (
     <Pressable
       onPress={() => router.push('/(tabs)/search')}
-      hitSlop={10}
+      hitSlop={12}
       style={({ pressed }) => ({
         width: 40,
         height: 40,
-        marginRight: 6,
+        marginRight: 8,
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 20,
-        backgroundColor: pressed ? 'rgba(255,255,255,0.2)' : 'transparent',
+        backgroundColor: pressed ? 'rgba(255,255,255,0.22)' : 'transparent',
       })}
     >
-      <Search color="#FFFFFF" size={22} />
+      <Search color="#FFFFFF" size={22} strokeWidth={2.5} />
     </Pressable>
   );
 }
@@ -58,6 +59,11 @@ function HeaderTitle() {
 
 export default function TabLayout() {
   const count = useCart((s) => s.count());
+  const insets = useSafeAreaInsets();
+
+  // Adapt to system navigation bar (gesture-bar on Android, home indicator on iOS)
+  const tabBarPaddingBottom = Math.max(insets.bottom, 8);
+  const tabBarHeight = 56 + tabBarPaddingBottom;
 
   return (
     <Tabs
@@ -71,12 +77,33 @@ export default function TabLayout() {
         headerShadowVisible: false,
         tabBarActiveTintColor: '#F47B20',
         tabBarInactiveTintColor: '#6A7189',
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '700',
+          marginTop: -2,
+        },
         tabBarStyle: {
-          paddingTop: 6,
-          height: 62,
-          paddingBottom: 10,
+          paddingTop: 8,
+          height: tabBarHeight,
+          paddingBottom: tabBarPaddingBottom,
           backgroundColor: '#FFFFFF',
           borderTopColor: '#E8EAF0',
+          borderTopWidth: 1,
+          // Soft shadow
+          ...Platform.select({
+            ios: {
+              shadowColor: '#000',
+              shadowOpacity: 0.06,
+              shadowRadius: 8,
+              shadowOffset: { width: 0, height: -2 },
+            },
+            android: {
+              elevation: 8,
+            },
+          }),
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4,
         },
       }}
     >
@@ -84,15 +111,18 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Accueil',
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Home color={color} size={focused ? 24 : 22} strokeWidth={focused ? 2.5 : 2} />
+          ),
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
           title: 'Rechercher',
-          tabBarIcon: ({ color, size }) => <Search color={color} size={size} />,
-          // Hide right search icon on the search tab itself
+          tabBarIcon: ({ color, focused }) => (
+            <Search color={color} size={focused ? 24 : 22} strokeWidth={focused ? 2.5 : 2} />
+          ),
           headerRight: () => null,
         }}
       />
@@ -100,25 +130,27 @@ export default function TabLayout() {
         name="cart"
         options={{
           title: 'Panier',
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, focused }) => (
             <View style={{ position: 'relative' }}>
-              <ShoppingCart color={color} size={size} />
+              <ShoppingCart color={color} size={focused ? 24 : 22} strokeWidth={focused ? 2.5 : 2} />
               {count > 0 && (
                 <View
                   style={{
                     position: 'absolute',
-                    top: -4,
-                    right: -8,
-                    backgroundColor: '#EF4444',
-                    borderRadius: 9,
+                    top: -5,
+                    right: -9,
+                    backgroundColor: '#E74C3C',
+                    borderRadius: 10,
                     minWidth: 18,
                     height: 18,
                     alignItems: 'center',
                     justifyContent: 'center',
                     paddingHorizontal: 4,
+                    borderWidth: 2,
+                    borderColor: '#FFFFFF',
                   }}
                 >
-                  <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>{count}</Text>
+                  <Text style={{ color: '#fff', fontSize: 10, fontWeight: '800' }}>{count}</Text>
                 </View>
               )}
             </View>
@@ -129,7 +161,9 @@ export default function TabLayout() {
         name="account"
         options={{
           title: 'Compte',
-          tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+          tabBarIcon: ({ color, focused }) => (
+            <User color={color} size={focused ? 24 : 22} strokeWidth={focused ? 2.5 : 2} />
+          ),
         }}
       />
     </Tabs>

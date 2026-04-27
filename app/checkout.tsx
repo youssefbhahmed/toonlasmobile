@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
@@ -17,6 +18,7 @@ import type { Address } from '../types/database';
 
 export default function CheckoutScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, loading: authLoading } = useAuth();
   const { items, subtotal, clear } = useCart();
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -184,7 +186,10 @@ export default function CheckoutScreen() {
   if (authLoading || !user) return null;
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
+    <ScrollView
+      className="flex-1 bg-gray-50"
+      contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+    >
       <View className="gap-4 p-4">
         {/* Shipping address */}
         <View className="rounded-xl bg-white p-4">

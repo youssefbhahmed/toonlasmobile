@@ -403,7 +403,7 @@ export default function HomeScreen() {
       </View>
 
       {/* RECOMMENDED */}
-      <View style={{ marginTop: 28, paddingHorizontal: 16, paddingBottom: 28 }}>
+      <View style={{ marginTop: 28, paddingHorizontal: 16, paddingBottom: 32 }}>
         <View
           style={{
             borderBottomWidth: 2,
