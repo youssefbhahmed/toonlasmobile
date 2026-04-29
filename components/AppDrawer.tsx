@@ -419,7 +419,10 @@ function SectionDivider() {
 
 /**
  * ListRow — Amazon-style list item
- * Thin row with optional thumbnail/icon, label, and chevron
+ * [icon/thumb]  Label .................  >
+ *
+ * IMPORTANT: layout is on an inner View (not on Pressable's style function),
+ * because Pressable's function-based style sometimes drops flex props on RN 0.81.
  */
 function ListRow({
   icon,
@@ -437,45 +440,57 @@ function ListRow({
   onPress: () => void;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => ({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 14,
-        paddingHorizontal: 16,
-        paddingVertical: 13,
-        backgroundColor: pressed ? '#F5F6F9' : '#FFFFFF',
-      })}
-    >
-      {thumbnail ? (
-        <View
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 6,
-            overflow: 'hidden',
-            backgroundColor: '#F5F6F9',
-          }}
-        >
-          <ThumbnailImage url={thumbnail} />
-        </View>
-      ) : icon ? (
-        <View style={{ width: 32, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
-      ) : (
-        <View style={{ width: 32 }} />
-      )}
-      <Text
+    <Pressable onPress={onPress} android_ripple={{ color: '#F5F6F9' }}>
+      <View
         style={{
-          flex: 1,
-          fontSize: 15,
-          color: labelColor ?? '#1E3A5F',
-          fontWeight: emphasized ? '700' : '500',
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          backgroundColor: '#FFFFFF',
         }}
       >
-        {label}
-      </Text>
-      <ChevronRight size={18} color="#9AA0B5" />
+        {thumbnail ? (
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 6,
+              overflow: 'hidden',
+              backgroundColor: '#F5F6F9',
+              marginRight: 14,
+            }}
+          >
+            <ThumbnailImage url={thumbnail} />
+          </View>
+        ) : icon ? (
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 14,
+            }}
+          >
+            {icon}
+          </View>
+        ) : (
+          <View style={{ width: 32, marginRight: 14 }} />
+        )}
+        <Text
+          style={{
+            flex: 1,
+            fontSize: 15,
+            color: labelColor ?? '#1E3A5F',
+            fontWeight: emphasized ? '700' : '500',
+          }}
+          numberOfLines={1}
+        >
+          {label}
+        </Text>
+        <ChevronRight size={18} color="#9AA0B5" />
+      </View>
     </Pressable>
   );
 }
